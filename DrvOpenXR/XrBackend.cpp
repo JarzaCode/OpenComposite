@@ -547,23 +547,23 @@ void XrBackend::SubmitFrames(bool showSkybox, bool postPresent)
         nFrameIndex++;
 }
 
-//IBackend::openvr_enum_t XrBackend::SetSkyboxOverride(const vr::Texture_t* pTextures, uint32_t unTextureCount)
-//{
+IBackend::openvr_enum_t XrBackend::SetSkyboxOverride(const vr::Texture_t* pTextures, uint32_t unTextureCount)
+{
         // Needed for rFactor2 loading screens
-        //if (unTextureCount && pTextures) {
-                //CheckOrInitCompositors(pTextures);
+        if (unTextureCount && pTextures) {
+                CheckOrInitCompositors(pTextures);
 
-                //if (!sessionActive || !usingApplicationGraphicsAPI)
+                if (!sessionActive || !usingApplicationGraphicsAPI)
                         //return 0;
 
                 // Make sure any unfinished frames don't call xrEndFrame after this call
-                //renderingFrame = false;
+                renderingFrame = false;
 
-                //XrFrameWaitInfo waitInfo{ XR_TYPE_FRAME_WAIT_INFO };
-                //XrFrameState state{ XR_TYPE_FRAME_STATE };
+                XrFrameWaitInfo waitInfo{ XR_TYPE_FRAME_WAIT_INFO };
+                XrFrameState state{ XR_TYPE_FRAME_STATE };
 
-                //OOVR_FAILED_XR_ABORT(xrWaitFrame(xr_session.get(), &waitInfo, &state));
-                //xr_gbl->nextPredictedFrameTime = state.predictedDisplayTime;
+                OOVR_FAILED_XR_ABORT(xrWaitFrame(xr_session.get(), &waitInfo, &state));
+                xr_gbl->nextPredictedFrameTime = state.predictedDisplayTime;
 
                 // This submits a frame when a skybox override is set. This is designed around rFactor2 where the skybox is used as
                 // a loading screen and is frequently updated, and most other games probably behave in a similar manner. It'd be
@@ -571,45 +571,45 @@ void XrBackend::SubmitFrames(bool showSkybox, bool postPresent)
                 // being called frequently enough, and that'd need to be carefully synchronised with the main submit thread. That's
                 // not yet implemented since it's not currently worth the hassle, but if someone in the future wants to do it:
                 // TODO submit skybox frames in their own thread.
-                //XrFrameBeginInfo beginInfo{ XR_TYPE_FRAME_BEGIN_INFO };
-                //OOVR_FAILED_XR_ABORT(xrBeginFrame(xr_session.get(), &beginInfo));
+                XrFrameBeginInfo beginInfo{ XR_TYPE_FRAME_BEGIN_INFO };
+                OOVR_FAILED_XR_ABORT(xrBeginFrame(xr_session.get(), &beginInfo));
 
-                //if (skybox_compositor == nullptr)
-                        //skybox_compositor = BaseCompositor::CreateCompositorAPI(pTextures);
+                if (skybox_compositor == nullptr)
+                        skybox_compositor = BaseCompositor::CreateCompositorAPI(pTextures);
 
-                //vr::VRTextureBounds_t bounds;
-                //bounds.uMin = 0.0;
-                //bounds.uMax = 1.0;
-                //bounds.vMin = 1.0;
-                //bounds.vMax = 0.0;
+                vr::VRTextureBounds_t bounds;
+                bounds.uMin = 0.0;
+                bounds.uMax = 1.0;
+                bounds.vMin = 1.0;
+                bounds.vMax = 0.0;
 
-                //XrCompositionLayerQuad layerQuad = { XR_TYPE_COMPOSITION_LAYER_QUAD };
-                //skybox_compositor->Invoke(pTextures, &bounds, layerQuad.subImage);
-                //layerQuad.type = XR_TYPE_COMPOSITION_LAYER_QUAD;
-                //layerQuad.next = NULL;
-                //layerQuad.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
-                //layerQuad.space = xr_space_from_ref_space_type(GetUnsafeBaseSystem()->currentSpace);
-                //layerQuad.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
-                //layerQuad.pose = { { 0.f, 0.f, 0.f, 1.f },
-                //      { 0.0f, 0.0f, -0.65f } };
-                //layerQuad.size = { 1.0f, 1.0f / 1.333f };
+                XrCompositionLayerQuad layerQuad = { XR_TYPE_COMPOSITION_LAYER_QUAD };
+                skybox_compositor->Invoke(pTextures, &bounds, layerQuad.subImage);
+                layerQuad.type = XR_TYPE_COMPOSITION_LAYER_QUAD;
+                layerQuad.next = NULL;
+                layerQuad.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
+                layerQuad.space = xr_space_from_ref_space_type(GetUnsafeBaseSystem()->currentSpace);
+                layerQuad.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
+                layerQuad.pose = { { 0.f, 0.f, 0.f, 1.f },
+                      { 0.0f, 0.0f, -0.65f } };
+                layerQuad.size = { 1.0f, 1.0f / 1.333f };
 
-                //XrCompositionLayerBaseHeader* layers[1];
-                //layers[0] = (XrCompositionLayerBaseHeader*)&layerQuad;
-                //XrFrameEndInfo info{ XR_TYPE_FRAME_END_INFO };
-                //info.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-                //info.displayTime = xr_gbl->nextPredictedFrameTime;
-                //info.layers = layers;
-                //info.layerCount = 1;
+                XrCompositionLayerBaseHeader* layers[1];
+                layers[0] = (XrCompositionLayerBaseHeader*)&layerQuad;
+                XrFrameEndInfo info{ XR_TYPE_FRAME_END_INFO };
+                info.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+                info.displayTime = xr_gbl->nextPredictedFrameTime;
+                info.layers = layers;
+                info.layerCount = 1;
 
-                //OOVR_FAILED_XR_SOFT_ABORT(xrEndFrame(xr_session.get(), &info));
+                OOVR_FAILED_XR_SOFT_ABORT(xrEndFrame(xr_session.get(), &info));
 
-        //} else {
-                //OOVR_SOFT_ABORT("Unsupported texture count");
-        //}
+        } else {
+                OOVR_SOFT_ABORT("Unsupported texture count");
+        }
 
-        //return 0;
-//}
+        return 0;
+}
 
 void XrBackend::ClearSkyboxOverride()
 {
